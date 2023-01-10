@@ -1,7 +1,40 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigKeys, configValidationSchema } from './config.schema';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Stages } from './stages.enum';
 
 @Module({
-  imports: [AuthModule],
+  imports: [
+    AuthModule,
+    ConfigModule.forRoot({
+      envFilePath: [`.env.stage.${process.env.STAGE}`],
+      validationSchema: configValidationSchema,
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        const isProduction =
+          configService.get(ConfigKeys.STAGE) === Stages.PROD;
+        return {
+          ssl: isProduction,
+          extra: {
+            // TODO review need for this
+            ssl: isProduction ? { rejectUnauthorized: false } : null,
+          },
+          type: 'postgres',
+          autoLoadEntities: true,
+          synchronize: !isProduction,
+          host: configService.get(ConfigKeys.DB_HOST),
+          port: configService.get(ConfigKeys.DB_PORT),
+          username: configService.get(ConfigKeys.DB_USERNAME),
+          password: configService.get(ConfigKeys.DB_PASSWORD),
+          database: configService.get(ConfigKeys.DB_DATABASE),
+        };
+      },
+    }),
+  ],
 })
 export class AppModule {}
