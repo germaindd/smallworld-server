@@ -4,10 +4,35 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ConfigKeys, configValidationSchema } from './config.schema';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Stages } from './stages.enum';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
     AuthModule,
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const stage = configService.get(ConfigKeys.STAGE);
+        switch (stage) {
+          case Stages.DEV: {
+            return {
+              pinoHttp: {
+                transport: { target: 'pino-pretty' },
+                level: 'trace',
+              },
+            };
+          }
+          default: {
+            return {
+              pinoHttp: {
+                level: 'info',
+              },
+            };
+          }
+        }
+      },
+    }),
     ConfigModule.forRoot({
       envFilePath: [`.env.stage.${process.env.STAGE}`],
       validationSchema: configValidationSchema,

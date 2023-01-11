@@ -1,4 +1,4 @@
-export const enum Stages {
+export enum Stages {
   PROD = 'prod',
   DEV = 'dev',
 }
