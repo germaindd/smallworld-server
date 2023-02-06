@@ -1,18 +1,23 @@
 import { IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import { Regex } from 'src/constants/regex';
 
 export class SignUpDto {
   @IsString()
-  @MinLength(4)
-  @MaxLength(30)
-  @Matches(/^(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/, {
-    message: 'invalid username format'
+  @Matches(Regex.emailValidation, {
+    message: 'Invalid email',
+  })
+  email!: string;
+  @IsString()
+  @Matches(Regex.usernameValidation, {
+    message: 'Invalid username',
   })
   username!: string;
   @IsString()
-  @MinLength(8)
-  @MaxLength(30)
-  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-    message: 'password is too weak',
+  @Matches(Regex.passwordValidation, {
+    message:
+      'Invalid password. Password must be between 8 and 30 characters and must contain ' +
+      '1) at least one uppercase letter 2) at least one lowercase letter and 3) at' +
+      'least one number or special character ',
   })
   password!: string;
 }

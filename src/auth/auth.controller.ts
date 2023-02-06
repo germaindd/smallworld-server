@@ -2,6 +2,8 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtDto } from './dto/jwt-dto';
 import { SignUpDto } from './dto/sign-up.dto';
+import { ValidateSignUpResponseDto } from './dto/validate-sign-up-response.dto';
+import { ValidateSignUpDto } from './dto/validate-sign-up.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -10,5 +12,12 @@ export class AuthController {
   @Post('/signup')
   signUp(@Body() signUpDto: SignUpDto): Promise<JwtDto> {
     return this.authService.signUp(signUpDto);
+  }
+
+  @Post('/validate-signup')
+  validate(
+    @Body() validateCredentialsDto: ValidateSignUpDto,
+  ): ValidateSignUpResponseDto {
+    return this.authService.validate(validateCredentialsDto);
   }
 }
