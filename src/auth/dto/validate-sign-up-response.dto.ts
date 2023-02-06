@@ -1,5 +1,7 @@
+import { SignUpValidationResult } from '../sign-up-validation-result';
+
 export class ValidateSignUpResponseDto {
-  username?: boolean;
-  password?: boolean;
-  email?: boolean;
+  username?: SignUpValidationResult;
+  password?: SignUpValidationResult;
+  email?: SignUpValidationResult;
 }

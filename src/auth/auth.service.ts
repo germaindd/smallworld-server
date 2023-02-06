@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Regex } from 'src/constants/regex';
 import { JwtDto } from './dto/jwt-dto';
@@ -7,6 +11,9 @@ import { ValidateSignUpResponseDto } from './dto/validate-sign-up-response.dto';
 import { ValidateSignUpDto } from './dto/validate-sign-up.dto';
 import { JwtPayload } from './jwt-payload';
 import { UserRepository } from './user.repository';
+import { SignUpValidationResult } from './sign-up-validation-result';
+import { setUncaughtExceptionCaptureCallback } from 'process';
+import { User } from './entity/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -16,9 +23,19 @@ export class AuthService {
   ) {}
 
   async signUp(signUpDto: SignUpDto): Promise<JwtDto> {
-    const { username, password } = signUpDto;
+    const { username, password, email } = signUpDto;
 
-    const user = await this.userRepository.addUser(username, password);
+    let user: User;
+
+    try {
+      user = await this.userRepository.addUser(username, password, email);
+    } catch (error: any) {
+      if (await this.userRepository.exist({ where: { username } }))
+        throw new ConflictException('Username already exists');
+      if (await this.userRepository.exist({ where: { email } }))
+        throw new ConflictException('User with that email already exists');
+      throw new InternalServerErrorException();
+    }
 
     const jwtPayload: JwtPayload = { sub: user.id, username };
     const accessToken = await this.jwtService.signAsync(jwtPayload);
@@ -26,21 +43,41 @@ export class AuthService {
     return { accessToken };
   }
 
-  validate(
+  private async validateUsername(
+    username: string,
+  ): Promise<SignUpValidationResult> {
+    if (!Regex.usernameValidation.test(username))
+      return SignUpValidationResult.INVALID_FORMAT;
+    if (await this.userRepository.exist({ where: { username } }))
+      return SignUpValidationResult.CONFLICT;
+    return SignUpValidationResult.SUCCESS;
+  }
+
+  private async validateEmail(email: string): Promise<SignUpValidationResult> {
+    if (!Regex.passwordValidation.test(email))
+      return SignUpValidationResult.INVALID_FORMAT;
+    if (await this.userRepository.exist({ where: { email } }))
+      return SignUpValidationResult.CONFLICT;
+    return SignUpValidationResult.SUCCESS;
+  }
+
+  async validate(
     validateCredentialsDto: ValidateSignUpDto,
-  ): ValidateSignUpResponseDto {
+  ): Promise<ValidateSignUpResponseDto> {
     const { username, password, email } = validateCredentialsDto;
+
     return {
       username:
         username !== undefined
-          ? Regex.usernameValidation.test(username)
+          ? await this.validateUsername(username)
           : undefined,
       password:
         password !== undefined
           ? Regex.passwordValidation.test(password)
+            ? SignUpValidationResult.SUCCESS
+            : SignUpValidationResult.INVALID_FORMAT
           : undefined,
-      email:
-        email !== undefined ? Regex.emailValidation.test(email) : undefined,
+      email: email !== undefined ? await this.validateEmail(email) : undefined,
     };
   }
 }

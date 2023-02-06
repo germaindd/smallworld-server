@@ -15,9 +15,9 @@ export class AuthController {
   }
 
   @Post('/validate-signup')
-  validate(
+  async validate(
     @Body() validateCredentialsDto: ValidateSignUpDto,
-  ): ValidateSignUpResponseDto {
+  ): Promise<ValidateSignUpResponseDto> {
     return this.authService.validate(validateCredentialsDto);
   }
 }
