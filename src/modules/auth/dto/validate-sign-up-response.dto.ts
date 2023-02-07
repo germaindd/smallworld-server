@@ -1,4 +1,4 @@
-import { SignUpValidationResult } from '../sign-up-validation-result';
+import { SignUpValidationResult } from '../types/sign-up-validation-result';
 
 export class ValidateSignUpResponseDto {
   username?: SignUpValidationResult;

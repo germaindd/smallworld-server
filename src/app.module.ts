@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ConfigKeys, configValidationSchema } from './config.schema';
+import { ConfigKeys, configValidationSchema } from './config/config.schema';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Stages } from './stages.enum';
+import { Stages } from './config/stages.enum';
 import { LoggerModule } from 'nestjs-pino';
 
 @Module({

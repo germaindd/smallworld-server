@@ -5,15 +5,14 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Regex } from 'src/constants/regex';
+import { User } from './data/user.entity';
+import { UserRepository } from './data/user.repository';
 import { JwtDto } from './dto/jwt-dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { ValidateSignUpResponseDto } from './dto/validate-sign-up-response.dto';
 import { ValidateSignUpDto } from './dto/validate-sign-up.dto';
-import { JwtPayload } from './jwt-payload';
-import { UserRepository } from './user.repository';
-import { SignUpValidationResult } from './sign-up-validation-result';
-import { setUncaughtExceptionCaptureCallback } from 'process';
-import { User } from './entity/user.entity';
+import { JwtPayload } from './types/jwt-payload';
+import { SignUpValidationResult } from './types/sign-up-validation-result';
 
 @Injectable()
 export class AuthService {
