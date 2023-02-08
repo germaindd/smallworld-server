@@ -1,5 +1,5 @@
 import { IsString, Matches, MaxLength, MinLength } from 'class-validator';
-import { Regex } from 'src/constants/regex';
+import { Regex } from 'src/modules/auth/constants/regex';
 
 export class SignUpDto {
   @IsString()
