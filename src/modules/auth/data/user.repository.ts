@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { FindManyOptions, Repository } from 'typeorm';
+import { FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { User } from './user.entity';
 
 @Injectable()
@@ -10,6 +10,12 @@ export class UserRepository {
 
   async exist(options?: FindManyOptions<User>): Promise<boolean> {
     return this.userRepo.exist(options);
+  }
+
+  async findOneBy(
+    where: FindOptionsWhere<User> | FindOptionsWhere<User>[],
+  ): Promise<User | null> {
+    return await this.userRepo.findOneBy(where);
   }
 
   async addUser(

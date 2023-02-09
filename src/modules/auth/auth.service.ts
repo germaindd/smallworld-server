@@ -2,12 +2,15 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Regex } from 'src/modules/auth/constants/regex';
+import * as Regex from 'src/modules/auth/constants/regex';
 import { User } from './data/user.entity';
 import { UserRepository } from './data/user.repository';
 import { JwtDto } from './dto/jwt-dto';
+import { SignInDto } from './dto/sign-in.dto';
+import * as bcrypt from 'bcrypt';
 import { SignUpDto } from './dto/sign-up.dto';
 import { ValidateSignUpResponseDto } from './dto/validate-sign-up-response.dto';
 import { ValidateSignUpDto } from './dto/validate-sign-up.dto';
@@ -50,6 +53,31 @@ export class AuthService {
     const accessToken = await this.jwtService.signAsync(jwtPayload);
 
     return { accessToken };
+  }
+
+  async signIn(signInDto: SignInDto): Promise<JwtDto> {
+    const { usernameOrEmail, password } = signInDto;
+    const formattedUsernameOrEmail = usernameOrEmail.toLowerCase().trim();
+
+    let query: Partial<User>;
+    if (Regex.emailValidation.test(usernameOrEmail)) {
+      query = { email: formattedUsernameOrEmail };
+    } else if (Regex.usernameValidation.test(usernameOrEmail)) {
+      query = { username: formattedUsernameOrEmail };
+      // field has already been validated through the built in validation pipe which checks
+      // that it is either a valid username or password so this exception will never be thrown
+    } else throw new InternalServerErrorException();
+
+    const user = await this.userRepository.findOneBy(query);
+    if (user != null && (await bcrypt.compare(password, user.password))) {
+      const jwtPayload: JwtPayload = {
+        sub: user.id,
+        username: user.username,
+      };
+      const accessToken = await this.jwtService.signAsync(jwtPayload);
+      return { accessToken };
+    }
+    throw new UnauthorizedException('Invalid login.');
   }
 
   private async validateUsername(
