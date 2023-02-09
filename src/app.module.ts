@@ -5,10 +5,12 @@ import { ConfigKeys, configValidationSchema } from './config/config.schema';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Stages } from './config/stages.enum';
 import { LoggerModule } from 'nestjs-pino';
+import { SessionModule } from './modules/session/session.module';
 
 @Module({
   imports: [
     AuthModule,
+    SessionModule,
     LoggerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

@@ -6,15 +6,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigKeys } from 'src/config/config.schema';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { AppSession } from '../session/data/session.entity';
 import { User } from './data/user.entity';
-import { LocalStrategy } from './local-strategy';
 import { UserRepository } from './data/user.repository';
 
 @Module({
   controllers: [AuthController],
   imports: [
     PassportModule,
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, AppSession]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -25,7 +25,8 @@ import { UserRepository } from './data/user.repository';
         },
       }),
     }),
+    ConfigModule,
   ],
-  providers: [AuthService, LocalStrategy, UserRepository],
+  providers: [AuthService, UserRepository],
 })
 export class AuthModule {}

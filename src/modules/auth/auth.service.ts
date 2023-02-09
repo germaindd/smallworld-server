@@ -14,8 +14,8 @@ import * as bcrypt from 'bcrypt';
 import { SignUpDto } from './dto/sign-up.dto';
 import { ValidateSignUpResponseDto } from './dto/validate-sign-up-response.dto';
 import { ValidateSignUpDto } from './dto/validate-sign-up.dto';
-import { JwtPayload } from './types/jwt-payload';
-import { SignUpValidationResult } from './types/sign-up-validation-result';
+import { TokenPayload } from '../session/models/token-payload';
+import { SignUpValidationResult } from './models/sign-up-validation-result';
 
 @Injectable()
 export class AuthService {
@@ -49,7 +49,7 @@ export class AuthService {
       throw new InternalServerErrorException();
     }
 
-    const jwtPayload: JwtPayload = { sub: user.id, username };
+    const jwtPayload: TokenPayload = { sub: user.id, username };
     const accessToken = await this.jwtService.signAsync(jwtPayload);
 
     return { accessToken };
@@ -70,7 +70,7 @@ export class AuthService {
 
     const user = await this.userRepository.findOneBy(query);
     if (user != null && (await bcrypt.compare(password, user.password))) {
-      const jwtPayload: JwtPayload = {
+      const jwtPayload: TokenPayload = {
         sub: user.id,
         username: user.username,
       };
