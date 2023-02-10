@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Stages } from './config/stages.enum';
 import { LoggerModule } from 'nestjs-pino';
 import { SessionModule } from './modules/session/session.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { SessionModule } from './modules/session/session.module';
         };
       },
     }),
+    ScheduleModule.forRoot(),
   ],
 })
 export class AppModule {}

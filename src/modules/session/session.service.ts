@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression, Interval } from '@nestjs/schedule';
+import { ConfigKeys } from 'src/config/config.schema';
+import { v4 as uuid } from 'uuid';
 import { AppSession } from './data/session.entity';
 import { SessionRepository } from './data/session.repository';
-import { v4 as uuid } from 'uuid';
-import { ConfigService } from '@nestjs/config';
-import { ConfigKeys } from 'src/config/config.schema';
 
 @Injectable()
 export class SessionService {
@@ -11,6 +12,20 @@ export class SessionService {
     private sessionRespository: SessionRepository,
     private configService: ConfigService,
   ) {}
+
+  private readonly compromisedSessions = new Set<string>();
+  private readonly compromisedSessionToExpiry = new Map<string, Date>();
+
+  @Cron(CronExpression.EVERY_12_HOURS)
+  clearExpiredCompromisedSessions() {
+    const currentDate = new Date(Date.now());
+    this.compromisedSessionToExpiry.forEach((expiry, session) => {
+      if (expiry < currentDate) {
+        this.compromisedSessions.delete(session);
+        this.compromisedSessionToExpiry.delete(session);
+      }
+    });
+  }
 
   private expiryTimeInMilliseconds =
     this.configService.get(ConfigKeys.REFRESH_TOKEN_EXPIRY_DAYS) *
@@ -40,5 +55,18 @@ export class SessionService {
       uuid(),
       this.getNewExpiryTimestamp(),
     );
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.sessionRespository.delete(id);
+  }
+
+  isCompromised(id: string): boolean {
+    return this.compromisedSessions.has(id);
+  }
+
+  setCompromised(id: string, expiry: Date) {
+    this.compromisedSessions.add(id);
+    this.compromisedSessionToExpiry.set(id, expiry);
   }
 }

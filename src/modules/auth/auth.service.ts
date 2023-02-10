@@ -4,22 +4,24 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { ConfigKeys } from 'src/config/config.schema';
 import * as Regex from 'src/modules/auth/constants/regex';
+import { AppSession } from '../session/data/session.entity';
+import { SessionService } from '../session/session.service';
 import { User } from './data/user.entity';
 import { UserRepository } from './data/user.repository';
 import { JwtDto } from './dto/jwt-dto';
 import { SignInDto } from './dto/sign-in.dto';
-import * as bcrypt from 'bcrypt';
 import { SignUpDto } from './dto/sign-up.dto';
 import { ValidateSignUpResponseDto } from './dto/validate-sign-up-response.dto';
 import { ValidateSignUpDto } from './dto/validate-sign-up.dto';
-import { AccessTokenPayload } from './models/token-payload';
-import { SignUpValidationResult } from './models/sign-up-validation-result';
-import { SessionService } from '../session/session.service';
-import { ConfigService } from '@nestjs/config';
-import { ConfigKeys } from 'src/config/config.schema';
 import { RefreshTokenPayload } from './models/refresh-token-payload';
+import { SignUpValidationResult } from './models/sign-up-validation-result';
+import { AccessTokenPayload } from './models/access-token-payload';
+import { UserAndSessionIds } from './models/user-and-session-ids';
 
 @Injectable()
 export class AuthService {
@@ -39,11 +41,12 @@ export class AuthService {
   private readonly accessTokenLifespanSeconds =
     this.configService.get(ConfigKeys.ACCESS_TOKEN_EXPIRY_MINUTES) * 60;
 
-  private async getNewTokens(user: User): Promise<JwtDto> {
-    const session = await this.sessionService.create();
+  private async getTokens(
+    userId: string,
+    session: AppSession,
+  ): Promise<JwtDto> {
     const accessTokenPayload: AccessTokenPayload = {
-      sub: user.id,
-      username: user.username,
+      sub: userId,
       sessionid: session.id,
     };
     const refreshTokenPayload: RefreshTokenPayload = {
@@ -86,7 +89,8 @@ export class AuthService {
       throw new InternalServerErrorException();
     }
 
-    return this.getNewTokens(user);
+    const session = await this.sessionService.create();
+    return this.getTokens(user.id, session);
   }
 
   async signIn(signInDto: SignInDto): Promise<JwtDto> {
@@ -104,9 +108,16 @@ export class AuthService {
 
     const user = await this.userRepository.findOneBy(query);
     if (user != null && (await bcrypt.compare(password, user.password))) {
-      return await this.getNewTokens(user);
+      const session = await this.sessionService.create();
+      return await this.getTokens(user.id, session);
     }
     throw new UnauthorizedException('Invalid login.');
+  }
+
+  async refreshTokens(userAndSessionIds: UserAndSessionIds) {
+    const { userId, sessionId } = userAndSessionIds;
+    const updatedSession = await this.sessionService.update(sessionId);
+    return this.getTokens(userId, updatedSession);
   }
 
   private async validateUsername(

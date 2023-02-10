@@ -19,4 +19,8 @@ export class SessionRepository {
   async update(id: string, tokenId: string, expiry: Date): Promise<AppSession> {
     return await this.sessionRepo.save({ id, tokenId, expiry });
   }
+
+  async delete(id: string): Promise<void> {
+    await this.sessionRepo.delete(id);
+  }
 }
