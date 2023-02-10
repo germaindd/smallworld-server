@@ -14,7 +14,7 @@ export class SessionService {
 
   private expiryTimeInMilliseconds =
     this.configService.get(ConfigKeys.REFRESH_TOKEN_EXPIRY_DAYS) *
-    1000 * // milliseconds in a second
+    1000 *
     60 * // seconds in a minute
     60 * // minutes in an hour
     24; // you get the gist

@@ -14,15 +14,52 @@ import * as bcrypt from 'bcrypt';
 import { SignUpDto } from './dto/sign-up.dto';
 import { ValidateSignUpResponseDto } from './dto/validate-sign-up-response.dto';
 import { ValidateSignUpDto } from './dto/validate-sign-up.dto';
-import { TokenPayload } from '../session/models/token-payload';
+import { AccessTokenPayload } from './models/token-payload';
 import { SignUpValidationResult } from './models/sign-up-validation-result';
+import { SessionService } from '../session/session.service';
+import { ConfigService } from '@nestjs/config';
+import { ConfigKeys } from 'src/config/config.schema';
+import { RefreshTokenPayload } from './models/refresh-token-payload';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userRepository: UserRepository,
     private jwtService: JwtService,
+    private sessionService: SessionService,
+    private configService: ConfigService,
   ) {}
+
+  private readonly accessTokenSecret = this.configService.get(
+    ConfigKeys.ACCESS_TOKEN_SECRET,
+  );
+  private readonly refreshTokenSecret = this.configService.get(
+    ConfigKeys.REFRESH_TOKEN_SECRET,
+  );
+  private readonly accessTokenLifespanSeconds =
+    this.configService.get(ConfigKeys.ACCESS_TOKEN_EXPIRY_MINUTES) * 60;
+
+  private async getNewTokens(user: User): Promise<JwtDto> {
+    const session = await this.sessionService.create();
+    const accessTokenPayload: AccessTokenPayload = {
+      sub: user.id,
+      username: user.username,
+      sessionid: session.id,
+    };
+    const refreshTokenPayload: RefreshTokenPayload = {
+      ...accessTokenPayload,
+      jti: session.tokenId,
+      exp: Math.round(session.expiry.getTime() / 1000), // iat format for jwt's is *seconds* since epoch hence the conversion
+    };
+    const accessToken = await this.jwtService.signAsync(accessTokenPayload, {
+      secret: this.accessTokenSecret,
+      expiresIn: this.accessTokenLifespanSeconds,
+    });
+    const refreshToken = await this.jwtService.signAsync(refreshTokenPayload, {
+      secret: this.refreshTokenSecret,
+    });
+    return { accessToken, refreshToken };
+  }
 
   async signUp(signUpDto: SignUpDto): Promise<JwtDto> {
     const { username, password, email } = signUpDto;
@@ -49,10 +86,7 @@ export class AuthService {
       throw new InternalServerErrorException();
     }
 
-    const jwtPayload: TokenPayload = { sub: user.id, username };
-    const accessToken = await this.jwtService.signAsync(jwtPayload);
-
-    return { accessToken };
+    return this.getNewTokens(user);
   }
 
   async signIn(signInDto: SignInDto): Promise<JwtDto> {
@@ -70,12 +104,7 @@ export class AuthService {
 
     const user = await this.userRepository.findOneBy(query);
     if (user != null && (await bcrypt.compare(password, user.password))) {
-      const jwtPayload: TokenPayload = {
-        sub: user.id,
-        username: user.username,
-      };
-      const accessToken = await this.jwtService.signAsync(jwtPayload);
-      return { accessToken };
+      return await this.getNewTokens(user);
     }
     throw new UnauthorizedException('Invalid login.');
   }

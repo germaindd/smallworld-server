@@ -1,4 +1,3 @@
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AppSession } from './session.entity';
@@ -6,7 +5,6 @@ import { AppSession } from './session.entity';
 export class SessionRepository {
   constructor(
     @InjectRepository(AppSession) private sessionRepo: Repository<AppSession>,
-    private configService: ConfigService,
   ) {}
 
   async create(tokenId: string, expiry: Date): Promise<AppSession> {

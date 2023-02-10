@@ -8,8 +8,10 @@ export enum ConfigKeys {
   DB_USERNAME = 'DB_USERNAME',
   DB_PASSWORD = 'DB_PASSWORD',
   DB_DATABASE = 'DB_DATABASE',
-  JWT_SECRET = 'JWT_SECRET',
+  ACCESS_TOKEN_SECRET = 'ACCESS_TOKEN_SECRET',
+  REFRESH_TOKEN_SECRET = 'REFRESH_TOKEN_SECRET',
   REFRESH_TOKEN_EXPIRY_DAYS = 'REFRESH_TOKEN_EXPIRY_DAYS',
+  ACCESS_TOKEN_EXPIRY_MINUTES = 'ACCESS_TOKEN_EXPIRY_MINUTES',
 }
 
 export const configValidationSchema = Joi.object({
@@ -20,6 +22,8 @@ export const configValidationSchema = Joi.object({
   DB_USERNAME: Joi.string().required(),
   DB_PASSWORD: Joi.string().required(),
   DB_DATABASE: Joi.string().required(),
-  JWT_SECRET: Joi.string().required(),
+  ACCESS_TOKEN_SECRET: Joi.string().required(),
+  REFRESH_TOKEN_SECRET: Joi.string().required(),
   REFRESH_TOKEN_EXPIRY_DAYS: Joi.number().required(),
+  ACCESS_TOKEN_EXPIRY_MINUTES: Joi.number().required(),
 });
