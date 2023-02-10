@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { ConfigKeys } from 'src/config/config.schema';
@@ -12,19 +12,23 @@ export class SessionService {
     private sessionRespository: SessionRepository,
     private configService: ConfigService,
   ) {}
-
   private readonly compromisedSessions = new Set<string>();
   private readonly compromisedSessionToExpiry = new Map<string, Date>();
 
+  private readonly logger = new Logger(SessionService.name);
+
   @Cron(CronExpression.EVERY_12_HOURS)
   clearExpiredCompromisedSessions() {
+    let count = 0;
     const currentDate = new Date(Date.now());
     this.compromisedSessionToExpiry.forEach((expiry, session) => {
       if (expiry < currentDate) {
         this.compromisedSessions.delete(session);
         this.compromisedSessionToExpiry.delete(session);
+        count++;
       }
     });
+    this.logger.log({ message: 'Compromised session cache purged.', count });
   }
 
   private expiryTimeInMilliseconds =

@@ -1,6 +1,6 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PassportStrategy } from '@nestjs/passport';
+import { AuthGuard, PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigKeys } from 'src/config/config.schema';
 import { SessionService } from 'src/modules/session/session.service';
@@ -10,11 +10,15 @@ import { UserAndSessionIds } from '../models/user-and-session-ids';
 const STRATEGY_NAME = 'access-token';
 
 @Injectable()
+export class AccessTokenGuard extends AuthGuard(STRATEGY_NAME) {}
+
+@Injectable()
 export class AccessTokenStrategy extends PassportStrategy(
   Strategy,
   STRATEGY_NAME,
 ) {
   static strategyName = STRATEGY_NAME;
+  private readonly logger = new Logger(AccessTokenStrategy.name);
 
   constructor(
     configService: ConfigService,
@@ -29,6 +33,11 @@ export class AccessTokenStrategy extends PassportStrategy(
 
   validate(payload: AccessTokenPayload): UserAndSessionIds {
     if (this.sessionService.isCompromised(payload.sessionid)) {
+      this.logger.warn({
+        message: 'Authorization attempt with compromised access token',
+        userid: payload.sub,
+        sessionid: payload.sessionid,
+      });
       throw new UnauthorizedException('Invalid session');
     }
     return { userId: payload.sub, sessionId: payload.sessionid };

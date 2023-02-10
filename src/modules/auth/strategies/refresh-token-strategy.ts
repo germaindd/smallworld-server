@@ -1,6 +1,6 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PassportStrategy } from '@nestjs/passport';
+import { AuthGuard, PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigKeys } from 'src/config/config.schema';
 import { SessionService } from 'src/modules/session/session.service';
@@ -10,11 +10,15 @@ import { UserAndSessionIds } from '../models/user-and-session-ids';
 const STRATEGY_NAME = 'refresh-token';
 
 @Injectable()
+export class RefreshTokenGuard extends AuthGuard(STRATEGY_NAME) {}
+
+@Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(
   Strategy,
   'refresh-token',
 ) {
   static strategyName = STRATEGY_NAME;
+  private readonly logger = new Logger(RefreshTokenStrategy.name);
 
   private readonly accessTokenLifespanMilliseconds: number;
   constructor(
@@ -33,8 +37,17 @@ export class RefreshTokenStrategy extends PassportStrategy(
 
   async validate(payload: RefreshTokenPayload): Promise<UserAndSessionIds> {
     const session = await this.sessionService.get(payload.sessionid);
-    if (session === null) throw new UnauthorizedException('Invalid session');
+    if (session === null) {
+      // user session may have expired, or it could be an attacker reattempting authorization
+      // with a token that has been reused
+      throw new UnauthorizedException('Invalid session');
+    }
     if (session.tokenId !== payload.jti) {
+      this.logger.warn({
+        message: 'Refresh token reused',
+        userid: payload.sub,
+        sessionid: payload.sessionid,
+      });
       // a new refresh token has already been issued, meaning this is an old token
       // that is attempting reuse. reuse of a refresh token means session has been compromised.
       // revoke the session and invalidate all associated tokens
