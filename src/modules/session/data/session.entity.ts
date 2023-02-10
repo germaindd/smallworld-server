@@ -5,6 +5,9 @@ export class AppSession {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'token_id' })
+  @Column({ name: 'token_id', type: 'uuid' })
   tokenId!: string;
+
+  @Column({ type: 'timestamp with time zone' })
+  expiry!: Date;
 }

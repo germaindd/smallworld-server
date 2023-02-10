@@ -9,6 +9,7 @@ export enum ConfigKeys {
   DB_PASSWORD = 'DB_PASSWORD',
   DB_DATABASE = 'DB_DATABASE',
   JWT_SECRET = 'JWT_SECRET',
+  REFRESH_TOKEN_EXPIRY_DAYS = 'REFRESH_TOKEN_EXPIRY_DAYS',
 }
 
 export const configValidationSchema = Joi.object({
@@ -20,4 +21,5 @@ export const configValidationSchema = Joi.object({
   DB_PASSWORD: Joi.string().required(),
   DB_DATABASE: Joi.string().required(),
   JWT_SECRET: Joi.string().required(),
+  REFRESH_TOKEN_EXPIRY_DAYS: Joi.number().required(),
 });
