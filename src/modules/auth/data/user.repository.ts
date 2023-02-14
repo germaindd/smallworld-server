@@ -18,6 +18,16 @@ export class UserRepository {
     return await this.userRepo.findOneBy(where);
   }
 
+  async find(options?: FindManyOptions<User>): Promise<User[]> {
+    return this.userRepo.find(options);
+  }
+
+  async findBy(
+    where: FindOptionsWhere<User> | FindOptionsWhere<User>[],
+  ): Promise<User[]> {
+    return this.userRepo.findBy(where);
+  }
+
   async addUser(
     username: string,
     password: string,

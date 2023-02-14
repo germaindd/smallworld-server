@@ -6,12 +6,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Stages } from './config/stages.enum';
 import { LoggerModule } from 'nestjs-pino';
 import { SessionModule } from './modules/session/session.module';
+import { SearchModule } from './modules/search/search.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     AuthModule,
     SessionModule,
+    SearchModule,
     LoggerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

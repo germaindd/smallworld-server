@@ -20,6 +20,7 @@ import { RefreshTokenStrategy } from './strategies/refresh-token-strategy';
     JwtModule.register({}),
     ConfigModule,
   ],
+  exports: [UserRepository],
   providers: [
     AuthService,
     UserRepository,
