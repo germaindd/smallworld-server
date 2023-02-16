@@ -1,11 +1,11 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity({ name: 'APP_SESSION' })
+@Entity()
 export class AppSession {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'token_id', type: 'uuid' })
+  @Column({ type: 'uuid' })
   tokenId!: string;
 
   @Column({ type: 'timestamp with time zone' })

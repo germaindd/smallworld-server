@@ -8,6 +8,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { SessionModule } from './modules/session/session.module';
 import { SearchModule } from './modules/search/search.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { FriendsModule } from './modules/friends/friends.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       },
     }),
     ScheduleModule.forRoot(),
+    FriendsModule,
   ],
 })
 export class AppModule {}
