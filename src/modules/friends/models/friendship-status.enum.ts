@@ -1,0 +1,6 @@
+export enum FriendshipStatus {
+  NONE = 'NONE',
+  OUTGOING_REQUEST = 'OUTGOING_REQUEST',
+  INCOMING_REQUEST = 'INCOMING_REQUEST',
+  FRIENDS = 'FRIENDS',
+}

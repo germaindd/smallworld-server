@@ -1,9 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  InternalServerErrorException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -11,25 +6,24 @@ import { ConfigKeys } from 'src/config/config.schema';
 import * as Regex from 'src/modules/auth/constants/regex';
 import { AppSession } from '../session/data/session.entity';
 import { SessionService } from '../session/session.service';
-import { User } from './data/user.entity';
-import { UserRepository } from './data/user.repository';
+import { UserService } from '../user/user.service';
 import { JwtDto } from './dto/jwt-dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { ValidateSignUpResponseDto } from './dto/validate-sign-up-response.dto';
 import { ValidateSignUpDto } from './dto/validate-sign-up.dto';
+import { AccessTokenPayload } from './models/access-token-payload';
 import { RefreshTokenPayload } from './models/refresh-token-payload';
 import { SignUpValidationResult } from './models/sign-up-validation-result';
-import { AccessTokenPayload } from './models/access-token-payload';
 import { UserAndSessionIds } from './models/user-and-session-ids';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private userRepository: UserRepository,
-    private jwtService: JwtService,
-    private sessionService: SessionService,
-    private configService: ConfigService,
+    private readonly jwtService: JwtService,
+    private readonly sessionService: SessionService,
+    private readonly configService: ConfigService,
+    private readonly userService: UserService,
   ) {}
 
   private readonly accessTokenSecret = this.configService.get(
@@ -65,29 +59,12 @@ export class AuthService {
   }
 
   async signUp(signUpDto: SignUpDto): Promise<JwtDto> {
-    const { username, password, email } = signUpDto;
-    const formattedUsername = username.toLowerCase().trim();
-    const formattedEmail = email.toLowerCase().trim();
+    const { username, email, password } = signUpDto;
 
-    let user: User;
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    try {
-      user = await this.userRepository.addUser(
-        formattedUsername,
-        password,
-        formattedEmail,
-      );
-    } catch (error: any) {
-      if (
-        await this.userRepository.exist({
-          where: { username: formattedUsername },
-        })
-      )
-        throw new ConflictException('Username already exists');
-      if (await this.userRepository.exist({ where: { email: formattedEmail } }))
-        throw new ConflictException('User with that email already exists');
-      throw new InternalServerErrorException();
-    }
+    const user = await this.userService.add(username, hashedPassword, email);
 
     const session = await this.sessionService.create();
     return this.getTokens(user.id, session);
@@ -95,18 +72,8 @@ export class AuthService {
 
   async signIn(signInDto: SignInDto): Promise<JwtDto> {
     const { usernameOrEmail, password } = signInDto;
-    const formattedUsernameOrEmail = usernameOrEmail.toLowerCase().trim();
 
-    let query: Partial<User>;
-    if (Regex.emailValidation.test(usernameOrEmail)) {
-      query = { email: formattedUsernameOrEmail };
-    } else if (Regex.usernameValidation.test(usernameOrEmail)) {
-      query = { username: formattedUsernameOrEmail };
-      // field has already been validated through the built in validation pipe which checks
-      // that it is either a valid username or password so this exception will never be thrown
-    } else throw new InternalServerErrorException();
-
-    const user = await this.userRepository.findOneBy(query);
+    const user = await this.userService.getByUsernameOrEmail(usernameOrEmail);
     if (user != null && (await bcrypt.compare(password, user.password))) {
       const session = await this.sessionService.create();
       return await this.getTokens(user.id, session);
@@ -125,7 +92,7 @@ export class AuthService {
   ): Promise<SignUpValidationResult> {
     if (!Regex.usernameValidation.test(username))
       return SignUpValidationResult.INVALID_FORMAT;
-    if (await this.userRepository.exist({ where: { username: username } }))
+    if (await this.userService.usernameExists(username))
       return SignUpValidationResult.CONFLICT;
     return SignUpValidationResult.SUCCESS;
   }
@@ -133,7 +100,7 @@ export class AuthService {
   private async validateEmail(email: string): Promise<SignUpValidationResult> {
     if (!Regex.emailValidation.test(email))
       return SignUpValidationResult.INVALID_FORMAT;
-    if (await this.userRepository.exist({ where: { email: email } }))
+    if (await this.userService.emailExists(email))
       return SignUpValidationResult.CONFLICT;
     return SignUpValidationResult.SUCCESS;
   }

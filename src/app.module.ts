@@ -10,6 +10,7 @@ import { FriendsModule } from './modules/friends/friends.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { SearchModule } from './modules/search/search.module';
 import { SessionModule } from './modules/session/session.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { SessionModule } from './modules/session/session.module';
     ScheduleModule.forRoot(),
     FriendsModule,
     ProfileModule,
+    UserModule,
   ],
 })
 export class AppModule {}

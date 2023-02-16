@@ -1,12 +1,12 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtDto } from './dto/jwt-dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { ValidateSignUpResponseDto } from './dto/validate-sign-up-response.dto';
 import { ValidateSignUpDto } from './dto/validate-sign-up.dto';
-import { GetUser as GetUserAndSessionIds } from './strategies/get-user.decorator';
 import { UserAndSessionIds } from './models/user-and-session-ids';
+import { GetUserAndSessionIds } from './strategies/get-user.decorator';
 import { RefreshTokenGuard } from './strategies/refresh-token-strategy';
 
 @Controller('auth')

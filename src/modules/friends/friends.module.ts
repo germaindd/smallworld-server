@@ -13,6 +13,7 @@ import { FriendshipRepository } from './data/friendship-repository';
     TypeOrmModule.forFeature([FriendRequest, Friendship, FriendshipMetadata]),
   ],
   controllers: [FriendsController],
+  exports: [FriendsService],
   providers: [FriendsService, FriendRequestRepository, FriendshipRepository],
 })
 export class FriendsModule {}
