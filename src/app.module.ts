@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ConfigKeys, configValidationSchema } from './config/config.schema';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Stages } from './config/stages.enum';
-import { LoggerModule } from 'nestjs-pino';
-import { SessionModule } from './modules/session/session.module';
-import { SearchModule } from './modules/search/search.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { LoggerModule } from 'nestjs-pino';
+import { ConfigKeys, configValidationSchema } from './config/config.schema';
+import { Stages } from './config/stages.enum';
+import { AuthModule } from './modules/auth/auth.module';
 import { FriendsModule } from './modules/friends/friends.module';
+import { ProfileModule } from './modules/profile/profile.module';
+import { SearchModule } from './modules/search/search.module';
+import { SessionModule } from './modules/session/session.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { FriendsModule } from './modules/friends/friends.module';
     }),
     ScheduleModule.forRoot(),
     FriendsModule,
+    ProfileModule,
   ],
 })
 export class AppModule {}
