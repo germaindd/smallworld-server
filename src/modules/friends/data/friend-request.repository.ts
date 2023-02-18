@@ -17,4 +17,12 @@ export class FriendRequestRepository {
   async exist(friendRequest: FriendRequest): Promise<boolean> {
     return this.repository.exist({ where: friendRequest });
   }
+
+  async findOneBy(request: FriendRequest): Promise<FriendRequest | null> {
+    return this.repository.findOneBy(request);
+  }
+
+  async delete(request: FriendRequest): Promise<void> {
+    await this.repository.remove(request);
+  }
 }

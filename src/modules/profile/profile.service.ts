@@ -17,8 +17,7 @@ export class ProfileService {
   ): Promise<ProfileDto> {
     const userForProfile = await this.userService.getById(userIdForProfile);
 
-    if (userForProfile === null)
-      throw new BadRequestException('User does not exist.');
+    if (!userForProfile) throw new BadRequestException('User does not exist.');
 
     const friendshipStatus: FriendshipStatus =
       await this.friendsService.getFriendshipStatus(userId, userIdForProfile);

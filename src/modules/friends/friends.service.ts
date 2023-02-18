@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   PreconditionFailedException,
@@ -6,12 +7,14 @@ import {
 import { FriendshipStatus } from './models/friendship-status.enum';
 import { FriendRequestRepository } from './data/friend-request.repository';
 import { FriendshipRepository } from './data/friendship-repository';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class FriendsService {
   constructor(
     private readonly friendRequestRepository: FriendRequestRepository,
     private readonly friendshipRepository: FriendshipRepository,
+    private readonly userService: UserService,
   ) {}
 
   private async friendshipExists(
@@ -38,10 +41,18 @@ export class FriendsService {
       return FriendshipStatus.OUTGOING_REQUEST;
     if (await this.friendRequestExists(toUserId, fromUserId))
       return FriendshipStatus.INCOMING_REQUEST;
-    return FriendshipStatus.NONE;
+    return FriendshipStatus.NOT_FRIENDS;
   }
 
   async sendRequest(fromUserId: string, toUserId: string): Promise<void> {
+    if (fromUserId === toUserId)
+      throw new BadRequestException(
+        'User cannot send a friend request to himself',
+      );
+
+    const toUser = await this.userService.getById(toUserId);
+    if (!toUser) throw new BadRequestException('User does not exist.');
+
     const friendshipStatus = await this.getFriendshipStatus(
       fromUserId,
       toUserId,
@@ -57,7 +68,7 @@ export class FriendsService {
         throw new PreconditionFailedException(
           'Cannot send a friend request to someone who one already has a pending request from ',
         );
-      case FriendshipStatus.NONE:
+      case FriendshipStatus.NOT_FRIENDS:
         await this.friendRequestRepository.add({
           fromUser: fromUserId,
           toUser: toUserId,
@@ -67,5 +78,27 @@ export class FriendsService {
         const _exhaustive: never = friendshipStatus;
         return _exhaustive;
     }
+  }
+
+  async acceptRequest(
+    acceptingUserId: string,
+    requestingUserId: string,
+  ): Promise<void> {
+    const user = this.userService.getById(requestingUserId);
+    if (!user) throw new BadRequestException('Invalid userId');
+
+    const friendRequest = await this.friendRequestRepository.findOneBy({
+      fromUser: requestingUserId,
+      toUser: acceptingUserId,
+    });
+    if (!friendRequest)
+      throw new PreconditionFailedException('Inexistent friend request.');
+
+    await this.friendRequestRepository.delete(friendRequest);
+
+    await this.friendshipRepository.add({
+      user1: acceptingUserId,
+      user2: requestingUserId,
+    });
   }
 }

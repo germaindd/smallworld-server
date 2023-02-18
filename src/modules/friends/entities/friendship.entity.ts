@@ -1,15 +1,16 @@
-import { Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { FriendshipMetadata } from './friendship-metadata.entity';
 
-@Entity()
+@Entity({ name: 'friendship' })
 export class Friendship {
+  @Index()
   @PrimaryColumn('uuid')
   fromUser!: string;
 
   @PrimaryColumn('uuid')
   toUser!: string;
 
-  @OneToOne(() => FriendshipMetadata, { nullable: false })
+  @ManyToOne(() => FriendshipMetadata, { nullable: false })
   @JoinColumn()
   metadata!: FriendshipMetadata;
 }
