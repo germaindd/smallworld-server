@@ -19,7 +19,11 @@ export class FriendRequestRepository {
   }
 
   async findOneBy(request: FriendRequest): Promise<FriendRequest | null> {
-    return this.repository.findOneBy(request);
+    return await this.repository.findOneBy(request);
+  }
+
+  async findBy(where: Partial<FriendRequest>) {
+    return await this.repository.findBy(where);
   }
 
   async delete(request: FriendRequest): Promise<void> {

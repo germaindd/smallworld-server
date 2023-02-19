@@ -4,10 +4,12 @@ import {
   Injectable,
   PreconditionFailedException,
 } from '@nestjs/common';
-import { FriendshipStatus } from './models/friendship-status.enum';
+import { User } from '../user/data/user.entity';
+import { UserService } from '../user/user.service';
 import { FriendRequestRepository } from './data/friend-request.repository';
 import { FriendshipRepository } from './data/friendship-repository';
-import { UserService } from '../user/user.service';
+import { FriendRequestDto } from './dto/friend-request.dto';
+import { FriendshipStatus } from './models/friendship-status.enum';
 
 @Injectable()
 export class FriendsService {
@@ -100,5 +102,20 @@ export class FriendsService {
       user1: acceptingUserId,
       user2: requestingUserId,
     });
+  }
+
+  async getRequests(userId: string): Promise<FriendRequestDto[]> {
+    const requests = await this.friendRequestRepository.findBy({
+      toUser: userId,
+    });
+    const promisedUsers = requests.map(async (request) => {
+      const user = await this.userService.getById(request.fromUser);
+      return user;
+    });
+    const users = (await Promise.all(promisedUsers)).filter(
+      (user): user is User => !!user,
+    );
+
+    return users.map((user) => ({ userId: user.id, username: user.username }));
   }
 }
