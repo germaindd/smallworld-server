@@ -23,7 +23,7 @@ import { UserModule } from './modules/user/user.module';
       useFactory: (configService: ConfigService) => {
         const stage = configService.get(ConfigKeys.STAGE);
         switch (stage) {
-          case Stages.DEV: {
+          case (Stages.DEV, Stages.LOCAL): {
             return {
               pinoHttp: {
                 transport: { target: 'pino-pretty' },
@@ -49,17 +49,17 @@ import { UserModule } from './modules/user/user.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
-        const isProduction =
-          configService.get(ConfigKeys.STAGE) === Stages.PROD;
+        const stage = configService.get(ConfigKeys.STAGE);
+        const isLocal = stage === Stages.LOCAL;
         return {
-          ssl: isProduction,
+          ssl: !isLocal,
           extra: {
             // TODO review need for this
-            ssl: isProduction ? { rejectUnauthorized: false } : null,
+            ssl: !isLocal ? { rejectUnauthorized: false } : null,
           },
           type: 'postgres',
           autoLoadEntities: true,
-          synchronize: !isProduction,
+          synchronize: stage !== Stages.PROD,
           host: configService.get(ConfigKeys.DB_HOST),
           port: configService.get(ConfigKeys.DB_PORT),
           username: configService.get(ConfigKeys.DB_USERNAME),
