@@ -86,22 +86,29 @@ export class FriendsService {
     acceptingUserId: string,
     requestingUserId: string,
   ): Promise<void> {
-    const user = this.userService.getById(requestingUserId);
-    if (!user) throw new BadRequestException('Invalid userId');
-
-    const friendRequest = await this.friendRequestRepository.findOneBy({
-      fromUser: requestingUserId,
-      toUser: acceptingUserId,
-    });
-    if (!friendRequest)
-      throw new PreconditionFailedException('Inexistent friend request.');
-
-    await this.friendRequestRepository.delete(friendRequest);
+    await this.deleteRequest(acceptingUserId, requestingUserId);
 
     await this.friendshipRepository.add({
       user1: acceptingUserId,
       user2: requestingUserId,
     });
+  }
+
+  async deleteRequest(
+    decliningUserRequest: string,
+    requestingUserId: string,
+  ): Promise<void> {
+    const user = this.userService.getById(requestingUserId);
+    if (!user) throw new BadRequestException('Invalid userId');
+
+    const friendRequest = await this.friendRequestRepository.findOneBy({
+      fromUser: requestingUserId,
+      toUser: decliningUserRequest,
+    });
+    if (!friendRequest)
+      throw new PreconditionFailedException('Inexistent friend request.');
+
+    await this.friendRequestRepository.delete(friendRequest);
   }
 
   async getRequests(userId: string): Promise<FriendRequestDto[]> {

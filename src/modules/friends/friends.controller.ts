@@ -3,6 +3,7 @@ import { UserAndSessionIds } from '../auth/models/user-and-session-ids';
 import { AccessTokenGuard } from '../auth/strategies/access-token-strategy';
 import { GetUserAndSessionIds as GetUserAndSessionIds } from '../auth/strategies/get-user.decorator';
 import { AcceptRequestDto } from './dto/accept-request.dto';
+import { DeclineRequestDto } from './dto/decline-request.dto';
 import { FriendRequestDto } from './dto/friend-request.dto';
 import { SendRequestDto } from './dto/send-request.dto';
 import { FriendsService } from './friends.service';
@@ -24,7 +25,7 @@ export class FriendsController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @Post('accept-request')
+  @Post('requests/accept')
   async acceptRequest(
     @GetUserAndSessionIds() userAndSessionIds: UserAndSessionIds,
     @Body() acceptRequestDto: AcceptRequestDto,
@@ -32,6 +33,18 @@ export class FriendsController {
     await this.friendsService.acceptRequest(
       userAndSessionIds.userId,
       acceptRequestDto.userId,
+    );
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post('requests/decline')
+  async declineRequest(
+    @GetUserAndSessionIds() userAndSessionIds: UserAndSessionIds,
+    @Body() declineRequestDto: DeclineRequestDto,
+  ): Promise<void> {
+    await this.friendsService.deleteRequest(
+      userAndSessionIds.userId,
+      declineRequestDto.userId,
     );
   }
 

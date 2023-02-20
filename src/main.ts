@@ -12,9 +12,10 @@ async function bootstrap() {
       disableErrorMessages: process.env.STAGE == Stages.PROD,
     }),
   );
+  app.enableCors({});
   const port = process.env.PORT;
   if (!port)
     throw new Error('PORT must be provided as an environment variable');
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();
