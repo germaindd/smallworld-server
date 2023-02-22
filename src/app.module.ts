@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -23,7 +23,8 @@ import { UserModule } from './modules/user/user.module';
       useFactory: (configService: ConfigService) => {
         const stage = configService.get(ConfigKeys.STAGE);
         switch (stage) {
-          case (Stages.DEV, Stages.LOCAL): {
+          case Stages.DEV:
+          case Stages.LOCAL: {
             return {
               pinoHttp: {
                 transport: { target: 'pino-pretty' },
@@ -31,12 +32,15 @@ import { UserModule } from './modules/user/user.module';
               },
             };
           }
-          default: {
+          case Stages.PROD: {
             return {
               pinoHttp: {
                 level: 'info',
               },
             };
+          }
+          default: {
+            throw new Error(`Invalid env var STAGE: ${stage}`);
           }
         }
       },
@@ -51,21 +55,54 @@ import { UserModule } from './modules/user/user.module';
       useFactory: async (configService: ConfigService) => {
         const stage = configService.get(ConfigKeys.STAGE);
         const isLocal = stage === Stages.LOCAL;
-        return {
-          ssl: !isLocal,
-          extra: {
-            // TODO review need for this
-            ssl: !isLocal ? { rejectUnauthorized: false } : null,
-          },
-          type: 'postgres',
-          autoLoadEntities: true,
-          synchronize: stage !== Stages.PROD,
-          host: configService.get(ConfigKeys.DB_HOST),
-          port: configService.get(ConfigKeys.DB_PORT),
-          username: configService.get(ConfigKeys.DB_USERNAME),
-          password: configService.get(ConfigKeys.DB_PASSWORD),
-          database: configService.get(ConfigKeys.DB_DATABASE),
-        };
+
+        switch (stage) {
+          case Stages.LOCAL: {
+            for (const configKey of [
+              ConfigKeys.DB_HOST,
+              ConfigKeys.DB_PORT,
+              ConfigKeys.DB_USERNAME,
+              ConfigKeys.DB_PASSWORD,
+              ConfigKeys.DB_DATABASE,
+            ]) {
+              if (!configService.get(configKey)) {
+                throw new Error(`Missing config var: ${configKey}`);
+              }
+            }
+
+            return {
+              type: 'postgres',
+              autoLoadEntities: true,
+              synchronize: true,
+              host: configService.get(ConfigKeys.DB_HOST),
+              port: configService.get(ConfigKeys.DB_PORT),
+              username: configService.get(ConfigKeys.DB_USERNAME),
+              password: configService.get(ConfigKeys.DB_PASSWORD),
+              database: configService.get(ConfigKeys.DB_DATABASE),
+            };
+          }
+          case Stages.DEV: {
+            if (!configService.get(ConfigKeys.DATABASE_URL)) {
+              throw new Error(`Missing config var: ${ConfigKeys.DATABASE_URL}`);
+            }
+            return {
+              ssl: true,
+              extra: {
+                ssl: { rejectUnauthorized: false },
+              },
+              type: 'postgres',
+              autoLoadEntities: true,
+              synchronize: true,
+              url: configService.get(ConfigKeys.DATABASE_URL),
+            };
+          }
+          case Stages.PROD: {
+            return {};
+          }
+          default: {
+            throw new Error(`Invalid env var STAGE: ${stage}`);
+          }
+        }
       },
     }),
     ScheduleModule.forRoot(),
