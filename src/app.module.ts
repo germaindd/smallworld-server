@@ -11,6 +11,7 @@ import { ProfileModule } from './modules/profile/profile.module';
 import { SearchModule } from './modules/search/search.module';
 import { SessionModule } from './modules/session/session.module';
 import { UserModule } from './modules/user/user.module';
+import { LocationModule } from './modules/location/location.module';
 
 @Module({
   imports: [
@@ -54,7 +55,6 @@ import { UserModule } from './modules/user/user.module';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
         const stage = configService.get(ConfigKeys.STAGE);
-        const isLocal = stage === Stages.LOCAL;
 
         switch (stage) {
           case Stages.LOCAL: {
@@ -109,6 +109,7 @@ import { UserModule } from './modules/user/user.module';
     FriendsModule,
     ProfileModule,
     UserModule,
+    LocationModule,
   ],
 })
 export class AppModule {}

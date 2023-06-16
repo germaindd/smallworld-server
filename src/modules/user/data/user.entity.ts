@@ -24,6 +24,12 @@ export class User {
   @Column()
   password!: string;
 
+  @Column({ type: 'float', nullable: true })
+  latitude?: number;
+
+  @Column({ type: 'float', nullable: true })
+  longitude?: number;
+
   // todo see if i really want these or if i prefer to load the relations myself by
   // querying the relevant tables
   @ManyToMany(() => Friendship, (frienship) => frienship.fromUser)

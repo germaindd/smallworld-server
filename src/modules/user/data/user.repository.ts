@@ -38,4 +38,8 @@ export class UserRepository {
       email,
     });
   }
+
+  async update(user: User) {
+    await this.userRepo.update(user.id, user);
+  }
 }
