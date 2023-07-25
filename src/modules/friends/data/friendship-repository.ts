@@ -2,12 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FriendshipMetadata } from '../entities/friendship-metadata.entity';
-import { Friendship as FriendshipEntity } from '../entities/friendship.entity';
-
-export class Friendship {
-  user1!: string;
-  user2!: string;
-}
+import { FriendshipEntity as FriendshipEntity } from '../entities/friendship.entity';
+import { Friendship } from '../models/friendship';
 
 @Injectable()
 export class FriendshipRepository {
@@ -22,6 +18,10 @@ export class FriendshipRepository {
     return this.friendshipRepo.exist({
       where: { fromUser: userOne, toUser: userTwo },
     });
+  }
+
+  async getAllFriendships(user: string): Promise<Array<FriendshipEntity>> {
+    return await this.friendshipRepo.find({ where: { fromUser: user } });
   }
 
   async add(friendship: Friendship): Promise<void> {

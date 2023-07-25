@@ -1,5 +1,5 @@
 import { FriendRequest } from 'src/modules/friends/entities/friend-request.entity';
-import { Friendship } from 'src/modules/friends/entities/friendship.entity';
+import { FriendshipEntity } from 'src/modules/friends/entities/friendship.entity';
 import {
   Column,
   Entity,
@@ -32,8 +32,8 @@ export class User {
 
   // todo see if i really want these or if i prefer to load the relations myself by
   // querying the relevant tables
-  @ManyToMany(() => Friendship, (frienship) => frienship.fromUser)
-  friends!: Friendship[];
+  @ManyToMany(() => FriendshipEntity, (frienship) => frienship.fromUser)
+  friends!: FriendshipEntity[];
 
   @ManyToMany(() => FriendRequest, (request) => request.fromUser)
   sentRequests!: FriendRequest[];

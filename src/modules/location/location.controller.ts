@@ -12,10 +12,18 @@ export class LocationController {
 
   @UseGuards(AccessTokenGuard)
   @Get()
-  async getRequests(
+  async getLocation(
     @GetUserAndSessionIds() userAndSessionIds: UserAndSessionIds,
   ): Promise<LocationDto | null> {
     return await this.locationService.get(userAndSessionIds.userId);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Get('friends')
+  async getFriendsLocations(
+    @GetUserAndSessionIds() userAndSessionIds: UserAndSessionIds,
+  ): Promise<Array<LocationDto>> {
+    return this.locationService.getFriendsLocations(userAndSessionIds.userId);
   }
 
   @UseGuards(AccessTokenGuard)

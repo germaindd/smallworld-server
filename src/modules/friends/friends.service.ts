@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   PreconditionFailedException,
 } from '@nestjs/common';
 import { User } from '../user/data/user.entity';
@@ -19,6 +20,8 @@ export class FriendsService {
     private readonly userService: UserService,
   ) {}
 
+  private readonly logger = new Logger(FriendsService.name);
+
   private async friendshipExists(
     fromUserId: string,
     toUserId: string,
@@ -31,6 +34,26 @@ export class FriendsService {
       fromUser: fromUserId,
       toUser: toUserId,
     });
+  }
+
+  async getAllFriends(userId: string): Promise<Array<User>> {
+    const friendships = await this.friendshipRepository.getAllFriendships(
+      userId,
+    );
+    const getUsersTasks = friendships.map((friendship) => {
+      return this.userService.getById(friendship.toUser);
+    });
+    const users = await Promise.all(getUsersTasks);
+    const filteredUsers = users.filter((user, index): user is User => {
+      if (user === null) {
+        this.logger.error(
+          `Error in FriendshipEntity ${friendships[index]}, toUser id nonexistent.`,
+        );
+        return false;
+      }
+      return true;
+    });
+    return filteredUsers;
   }
 
   async getFriendshipStatus(
