@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { ConfigKeys } from 'src/config/config.schema';
 import * as Regex from 'src/modules/auth/constants/regex';
-import { AppSession } from '../session/data/session.entity';
+import { SessionEntity } from '../session/data/session.entity';
 import { SessionService } from '../session/session.service';
 import { UserService } from '../user/user.service';
 import { JwtDto } from './dto/jwt-dto';
@@ -37,7 +37,7 @@ export class AuthService {
 
   private async getTokens(
     userId: string,
-    session: AppSession,
+    session: SessionEntity,
   ): Promise<JwtDto> {
     const accessTokenPayload: AccessTokenPayload = {
       sub: userId,

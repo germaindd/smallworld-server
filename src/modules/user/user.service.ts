@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Like } from 'typeorm';
 import * as Regex from '../auth/constants/regex';
-import { User } from './data/user.entity';
+import { UserEntity } from './data/user.entity';
 import { UserRepository } from './data/user.repository';
 import { Location } from '../location/models/location.model';
 
@@ -14,11 +14,15 @@ import { Location } from '../location/models/location.model';
 export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
-  async add(username: string, password: string, email: string): Promise<User> {
+  async add(
+    username: string,
+    password: string,
+    email: string,
+  ): Promise<UserEntity> {
     const formattedUsername = username.toLowerCase().trim();
     const formattedEmail = email.toLowerCase().trim();
 
-    let user: User;
+    let user: UserEntity;
 
     try {
       user = await this.userRepository.addUser(
@@ -41,10 +45,12 @@ export class UserService {
     return user;
   }
 
-  async getByUsernameOrEmail(usernameOrEmail: string): Promise<User | null> {
+  async getByUsernameOrEmail(
+    usernameOrEmail: string,
+  ): Promise<UserEntity | null> {
     const formattedUsernameOrEmail = usernameOrEmail.toLowerCase().trim();
 
-    let query: Partial<User>;
+    let query: Partial<UserEntity>;
     if (Regex.emailValidation.test(usernameOrEmail)) {
       query = { email: formattedUsernameOrEmail };
     } else if (Regex.usernameValidation.test(usernameOrEmail)) {
@@ -56,7 +62,7 @@ export class UserService {
     return await this.userRepository.findOneBy(query);
   }
 
-  async getById(id: string): Promise<User | null> {
+  async getById(id: string): Promise<UserEntity | null> {
     return this.userRepository.findOneBy({ id });
   }
 
@@ -68,7 +74,7 @@ export class UserService {
     return await this.userRepository.exist({ where: { email: email } });
   }
 
-  async searchByUsername(query: string, take: number): Promise<User[]> {
+  async searchByUsername(query: string, take: number): Promise<UserEntity[]> {
     if (query.trim() === '') return [];
     const users = await this.userRepository.find({
       where: {

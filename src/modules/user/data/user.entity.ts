@@ -1,4 +1,4 @@
-import { FriendRequest } from 'src/modules/friends/entities/friend-request.entity';
+import { FriendRequestEntity } from 'src/modules/friends/entities/friend-request.entity';
 import { FriendshipEntity } from 'src/modules/friends/entities/friendship.entity';
 import {
   Column,
@@ -8,8 +8,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity()
-export class User {
+@Entity({ name: 'user' })
+export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -35,9 +35,9 @@ export class User {
   @ManyToMany(() => FriendshipEntity, (frienship) => frienship.fromUser)
   friends!: FriendshipEntity[];
 
-  @ManyToMany(() => FriendRequest, (request) => request.fromUser)
-  sentRequests!: FriendRequest[];
+  @ManyToMany(() => FriendRequestEntity, (request) => request.fromUser)
+  sentRequests!: FriendRequestEntity[];
 
-  @ManyToMany(() => FriendRequest, (request) => request.toUser)
-  receivedRequests!: FriendRequest[];
+  @ManyToMany(() => FriendRequestEntity, (request) => request.toUser)
+  receivedRequests!: FriendRequestEntity[];
 }

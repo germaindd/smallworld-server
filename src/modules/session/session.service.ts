@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { ConfigKeys } from 'src/config/config.schema';
 import { v4 as uuid } from 'uuid';
-import { AppSession } from './data/session.entity';
+import { SessionEntity } from './data/session.entity';
 import { SessionRepository } from './data/session.repository';
 
 @Injectable()
@@ -42,18 +42,18 @@ export class SessionService {
     return new Date(Date.now() + this.expiryTimeInMilliseconds);
   }
 
-  async create(): Promise<AppSession> {
+  async create(): Promise<SessionEntity> {
     return await this.sessionRespository.create(
       uuid(),
       this.getNewExpiryTimestamp(),
     );
   }
 
-  async get(id: string): Promise<AppSession | null> {
+  async get(id: string): Promise<SessionEntity | null> {
     return await this.sessionRespository.get(id);
   }
 
-  async update(id: string): Promise<AppSession> {
+  async update(id: string): Promise<SessionEntity> {
     return await this.sessionRespository.update(
       id,
       uuid(),

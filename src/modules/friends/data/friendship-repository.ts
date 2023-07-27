@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { FriendshipMetadata } from '../entities/friendship-metadata.entity';
+import { FriendshipMetadataEntity } from '../entities/friendship-metadata.entity';
 import { FriendshipEntity as FriendshipEntity } from '../entities/friendship.entity';
 import { Friendship } from '../models/friendship';
 
@@ -10,8 +10,8 @@ export class FriendshipRepository {
   constructor(
     @InjectRepository(FriendshipEntity)
     private readonly friendshipRepo: Repository<FriendshipEntity>,
-    @InjectRepository(FriendshipMetadata)
-    private readonly metadataRepo: Repository<FriendshipMetadata>,
+    @InjectRepository(FriendshipMetadataEntity)
+    private readonly metadataRepo: Repository<FriendshipMetadataEntity>,
   ) {}
 
   async exist(userOne: string, userTwo: string): Promise<boolean> {

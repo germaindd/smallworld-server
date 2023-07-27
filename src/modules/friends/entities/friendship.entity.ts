@@ -1,5 +1,5 @@
 import { Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
-import { FriendshipMetadata } from './friendship-metadata.entity';
+import { FriendshipMetadataEntity } from './friendship-metadata.entity';
 
 @Entity({ name: 'friendship' })
 export class FriendshipEntity {
@@ -10,7 +10,7 @@ export class FriendshipEntity {
   @PrimaryColumn('uuid')
   toUser!: string;
 
-  @ManyToOne(() => FriendshipMetadata, { nullable: false })
+  @ManyToOne(() => FriendshipMetadataEntity, { nullable: false })
   @JoinColumn()
-  metadata!: FriendshipMetadata;
+  metadata!: FriendshipMetadataEntity;
 }

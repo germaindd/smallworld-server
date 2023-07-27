@@ -1,7 +1,7 @@
 import { Entity, Index, PrimaryColumn } from 'typeorm';
 
-@Entity()
-export class FriendRequest {
+@Entity({ name: 'friends_request' })
+export class FriendRequestEntity {
   @Index()
   @PrimaryColumn('uuid')
   fromUser!: string;

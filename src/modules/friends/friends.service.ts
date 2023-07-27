@@ -5,7 +5,7 @@ import {
   Logger,
   PreconditionFailedException,
 } from '@nestjs/common';
-import { User } from '../user/data/user.entity';
+import { UserEntity } from '../user/data/user.entity';
 import { UserService } from '../user/user.service';
 import { FriendRequestRepository } from './data/friend-request.repository';
 import { FriendshipRepository } from './data/friendship-repository';
@@ -36,7 +36,7 @@ export class FriendsService {
     });
   }
 
-  async getAllFriends(userId: string): Promise<Array<User>> {
+  async getAllFriends(userId: string): Promise<Array<UserEntity>> {
     const friendships = await this.friendshipRepository.getAllFriendships(
       userId,
     );
@@ -44,7 +44,7 @@ export class FriendsService {
       return this.userService.getById(friendship.toUser);
     });
     const users = await Promise.all(getUsersTasks);
-    const filteredUsers = users.filter((user, index): user is User => {
+    const filteredUsers = users.filter((user, index): user is UserEntity => {
       if (user === null) {
         this.logger.error(
           `Error in FriendshipEntity ${friendships[index]}, toUser id nonexistent.`,
@@ -143,7 +143,7 @@ export class FriendsService {
       return user;
     });
     const users = (await Promise.all(promisedUsers)).filter(
-      (user): user is User => !!user,
+      (user): user is UserEntity => !!user,
     );
 
     return users.map((user) => ({ userId: user.id, username: user.username }));

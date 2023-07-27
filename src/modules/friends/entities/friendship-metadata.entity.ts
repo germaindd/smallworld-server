@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'friendship_metadata' })
-export class FriendshipMetadata {
+export class FriendshipMetadataEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 }
