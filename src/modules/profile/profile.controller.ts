@@ -5,11 +5,11 @@ import { GetUserAndSessionIds } from '../auth/strategies/get-user.decorator';
 import { ProfileDto } from './dto/profile.dto';
 import { ProfileService } from './profile.service';
 
-@UseGuards(AccessTokenGuard)
 @Controller('profile')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
+  @UseGuards(AccessTokenGuard)
   @Get('/:id')
   async getProfile(
     @Param('id') id: string,

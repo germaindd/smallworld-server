@@ -1,4 +1,5 @@
 import * as Joi from 'joi';
+import { Stages } from './stages.enum';
 
 export enum ConfigKeys {
   PORT = 'PORT',
@@ -14,18 +15,24 @@ export enum ConfigKeys {
   REFRESH_TOKEN_EXPIRY_DAYS = 'REFRESH_TOKEN_EXPIRY_DAYS',
   ACCESS_TOKEN_EXPIRY_MINUTES = 'ACCESS_TOKEN_EXPIRY_MINUTES',
 }
+const requiredWhen = (stage: Stages, schema: Joi.Schema) =>
+  Joi.when(ConfigKeys.STAGE, {
+    is: stage,
+    then: schema.required(),
+    otherwise: Joi.forbidden(),
+  });
 
 export const configValidationSchema = Joi.object({
-  PORT: Joi.number().required(),
-  STAGE: Joi.string().required(),
-  DATABASE_URL: Joi.string().optional(),
-  DB_HOST: Joi.string().optional(),
-  DB_PORT: Joi.number().optional(),
-  DB_USERNAME: Joi.string().optional(),
-  DB_PASSWORD: Joi.string().optional(),
-  DB_DATABASE: Joi.string().optional(),
-  ACCESS_TOKEN_SECRET: Joi.string().required(),
-  REFRESH_TOKEN_SECRET: Joi.string().required(),
-  REFRESH_TOKEN_EXPIRY_DAYS: Joi.number().required(),
-  ACCESS_TOKEN_EXPIRY_MINUTES: Joi.number().required(),
+  [ConfigKeys.PORT]: Joi.number().required(),
+  [ConfigKeys.STAGE]: Joi.string().required(),
+  [ConfigKeys.DATABASE_URL]: requiredWhen(Stages.DEV, Joi.string()),
+  [ConfigKeys.DB_HOST]: requiredWhen(Stages.LOCAL, Joi.string()),
+  [ConfigKeys.DB_PORT]: requiredWhen(Stages.LOCAL, Joi.number()),
+  [ConfigKeys.DB_USERNAME]: requiredWhen(Stages.LOCAL, Joi.string()),
+  [ConfigKeys.DB_PASSWORD]: requiredWhen(Stages.LOCAL, Joi.string()),
+  [ConfigKeys.DB_DATABASE]: requiredWhen(Stages.LOCAL, Joi.string()),
+  [ConfigKeys.ACCESS_TOKEN_SECRET]: Joi.string().required(),
+  [ConfigKeys.REFRESH_TOKEN_SECRET]: Joi.string().required(),
+  [ConfigKeys.REFRESH_TOKEN_EXPIRY_DAYS]: Joi.number().required(),
+  [ConfigKeys.ACCESS_TOKEN_EXPIRY_MINUTES]: Joi.number().required(),
 });

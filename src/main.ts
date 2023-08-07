@@ -16,8 +16,6 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors({});
-
   const port = process.env.PORT;
   if (!port)
     throw new Error('PORT must be provided as an environment variable');

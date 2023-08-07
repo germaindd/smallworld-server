@@ -17,7 +17,6 @@ export class RefreshTokenStrategy extends PassportStrategy(
   Strategy,
   'refresh-token',
 ) {
-  static strategyName = STRATEGY_NAME;
   private readonly logger = new Logger(RefreshTokenStrategy.name);
 
   private readonly accessTokenLifespanMilliseconds: number;

@@ -17,7 +17,6 @@ export class AccessTokenStrategy extends PassportStrategy(
   Strategy,
   STRATEGY_NAME,
 ) {
-  static strategyName = STRATEGY_NAME;
   private readonly logger = new Logger(AccessTokenStrategy.name);
 
   constructor(

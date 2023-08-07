@@ -58,18 +58,6 @@ import { LocationModule } from './modules/location/location.module';
 
         switch (stage) {
           case Stages.LOCAL: {
-            for (const configKey of [
-              ConfigKeys.DB_HOST,
-              ConfigKeys.DB_PORT,
-              ConfigKeys.DB_USERNAME,
-              ConfigKeys.DB_PASSWORD,
-              ConfigKeys.DB_DATABASE,
-            ]) {
-              if (!configService.get(configKey)) {
-                throw new Error(`Missing config var: ${configKey}`);
-              }
-            }
-
             return {
               type: 'postgres',
               autoLoadEntities: true,
@@ -82,9 +70,6 @@ import { LocationModule } from './modules/location/location.module';
             };
           }
           case Stages.DEV: {
-            if (!configService.get(ConfigKeys.DATABASE_URL)) {
-              throw new Error(`Missing config var: ${ConfigKeys.DATABASE_URL}`);
-            }
             return {
               ssl: true,
               extra: {
@@ -97,7 +82,7 @@ import { LocationModule } from './modules/location/location.module';
             };
           }
           case Stages.PROD: {
-            return {};
+            throw Error('Prod database not yet configured');
           }
           default: {
             throw new Error(`Invalid env var STAGE: ${stage}`);
