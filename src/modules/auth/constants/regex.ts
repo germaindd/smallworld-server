@@ -1,6 +1,6 @@
 /* 
 Both the bellow regular expressions have tolerance for trailing whitespace,
-as it's trimmed when 
+as it's trimmed in AuthService before creating a user
 */
 const emailString = '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}[ \t]*$';
 const usernameString =

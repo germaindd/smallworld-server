@@ -82,7 +82,7 @@ import { LocationModule } from './modules/location/location.module';
             };
           }
           case Stages.PROD: {
-            throw Error('Prod database not yet configured');
+            throw new Error('Prod database not yet configured');
           }
           default: {
             throw new Error(`Invalid env var STAGE: ${stage}`);

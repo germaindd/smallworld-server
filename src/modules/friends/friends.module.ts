@@ -3,9 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from '../user/user.module';
 import { FriendRequestRepository } from './data/friend-request.repository';
 import { FriendshipRepository } from './data/friendship-repository';
-import { FriendRequestEntity } from './entities/friend-request.entity';
-import { FriendshipMetadataEntity } from './entities/friendship-metadata.entity';
-import { FriendshipEntity } from './entities/friendship.entity';
+import { FriendRequestEntity } from './data/friend-request.entity';
+import { FriendshipMetadataEntity } from './data/friendship-metadata.entity';
+import { FriendshipEntity } from './data/friendship.entity';
 import { FriendsController } from './friends.controller';
 import { FriendsService } from './friends.service';
 

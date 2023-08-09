@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { FriendshipMetadataEntity } from '../entities/friendship-metadata.entity';
-import { FriendshipEntity as FriendshipEntity } from '../entities/friendship.entity';
+import { FriendshipMetadataEntity } from './friendship-metadata.entity';
+import { FriendshipEntity as FriendshipEntity } from './friendship.entity';
 import { Friendship } from '../models/friendship';
 
 @Injectable()

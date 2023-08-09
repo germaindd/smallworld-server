@@ -1,5 +1,5 @@
-import { FriendRequestEntity } from 'src/modules/friends/entities/friend-request.entity';
-import { FriendshipEntity } from 'src/modules/friends/entities/friendship.entity';
+import { FriendRequestEntity } from 'src/modules/friends/data/friend-request.entity';
+import { FriendshipEntity } from 'src/modules/friends/data/friendship.entity';
 import {
   Column,
   Entity,

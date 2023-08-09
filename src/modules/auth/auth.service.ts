@@ -17,6 +17,7 @@ import { RefreshTokenPayload } from './models/refresh-token-payload';
 import { SignUpValidationResult } from './models/sign-up-validation-result';
 import { UserAndSessionIds } from './models/user-and-session-ids';
 
+const MILLISECONDS_IN_ONE_SECOND = 1000;
 @Injectable()
 export class AuthService {
   constructor(
@@ -46,7 +47,7 @@ export class AuthService {
     const refreshTokenPayload: RefreshTokenPayload = {
       ...accessTokenPayload,
       jti: session.tokenId,
-      exp: Math.round(session.expiry.getTime() / 1000), // iat format for jwt's is *seconds* since epoch hence the conversion
+      exp: Math.round(session.expiry.getTime() / MILLISECONDS_IN_ONE_SECOND), // iat format for jwt's is *seconds* since epoch hence the conversion
     };
     const accessToken = await this.jwtService.signAsync(accessTokenPayload, {
       secret: this.accessTokenSecret,

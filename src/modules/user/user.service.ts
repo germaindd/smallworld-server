@@ -8,7 +8,7 @@ import { Like } from 'typeorm';
 import * as Regex from '../auth/constants/regex';
 import { UserEntity } from './data/user.entity';
 import { UserRepository } from './data/user.repository';
-import { Location } from '../location/models/location.model';
+import { UpdateLocationDto } from '../location/dto/update-location.dto';
 
 @Injectable()
 export class UserService {
@@ -85,7 +85,7 @@ export class UserService {
     return users;
   }
 
-  async updateLocation(id: string, location: Location) {
+  async updateLocation(id: string, location: UpdateLocationDto) {
     const user = await this.getById(id);
 
     if (!user) throw new BadRequestException('User does not exist.');
